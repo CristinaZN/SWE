@@ -7,3 +7,9 @@ r001tr : test for omp version 2 (best scheduling is guided)
 r002tr : test for omp version 3 (cancel the barrier between vertical and horizontal calculations)
 	Github: https://github.com/CristinaZN/SWE.git
 	git checkpoint: a2fe093fb1cf632f66cd396b78e5b5eb780c9ec5
+r003tr : test for omp version 4, using dynamic scheduling.
+	Github: https://github.com/CristinaZN/SWE.git
+r004tr : test for omp version 5, using taskloop
+	Github: https://github.com/CristinaZN/SWE.git
+r021tr : test for omp version 6, using guided scheduling
+	Github: https://github.com/CristinaZN/SWE.git
