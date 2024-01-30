@@ -20,6 +20,8 @@ make clean && make -j 16
 ./SWE-MPI-Runner -x 1000 -y 1000 -n 10
 ```
 
+Noticing that, when using the macro define how to build the project, the running speed is slower down (we are not sure if the macro defines can make such a influence, since it should not based on our knowledge.). Maybe the reason is that when we test our code on the server, other people are also running some works. 
+
 
 Original readme is following
 ===
