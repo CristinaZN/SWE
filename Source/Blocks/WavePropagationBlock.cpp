@@ -87,72 +87,72 @@ void Blocks::WavePropagationBlock::computeNumericalFluxes() {
   maxWaveSpeedLocal_vec2[nx_ + 1] = RealType(0.0);
   
 
-  #pragma omp parallel num_threads(56)
+  #if  OMP_FOR==1 or OMP_TASK==1
+  #pragma omp parallel
   {
-    
+  #endif
+    #if OMP_FOR==1
     auto grainsize_ = (int)((nx_ + 2) / omp_get_num_threads());
-    // int grainsize_ = 8;
-    // #pragma omp single nowait
-    // #pragma omp taskloop nogroup mergeable collapse(1) num_tasks(omp_get_max_threads()*4)
-    #pragma omp for schedule(guided, grainsize_) nowait
+    #pragma omp for schedule(static, grainsize_) nowait
+    #elif OMP_TASK==1
+    #pragma omp single nowait
+    #pragma omp taskloop nogroup mergeable collapse(1) num_tasks(omp_get_max_threads() * 2)
+    #endif
     for (int i = 1; i < (nx_ + 2); i++) {
-      // #pragma omp task
-      // {
-        maxWaveSpeedLocal_vec[i] = RealType(0.0);
-        auto tid = omp_get_thread_num();
-        RealType maxEdgeSpeed = RealType(0.0);
-        for (int j = 1; j < ny_ + 1; ++j) {
-          wavePropagationSolver_[tid].computeNetUpdates(
-            h_[i - 1][j],
-            h_[i][j],
-            hu_[i - 1][j],
-            hu_[i][j],
-            b_[i - 1][j],
-            b_[i][j],
-            hNetUpdatesLeft_[i - 1][j - 1],
-            hNetUpdatesRight_[i - 1][j - 1],
-            huNetUpdatesLeft_[i - 1][j - 1],
-            huNetUpdatesRight_[i - 1][j - 1],
-            maxEdgeSpeed
-          );
-          maxWaveSpeedLocal_vec[i] = std::max(maxWaveSpeedLocal_vec[i], maxEdgeSpeed);
-
-        }
-      // }
+      maxWaveSpeedLocal_vec[i] = RealType(0.0);
+      auto tid = omp_get_thread_num();
+      RealType maxEdgeSpeed = RealType(0.0);
+      for (int j = 1; j < ny_ + 1; ++j) {
+        wavePropagationSolver_[tid].computeNetUpdates(
+          h_[i - 1][j],
+          h_[i][j],
+          hu_[i - 1][j],
+          hu_[i][j],
+          b_[i - 1][j],
+          b_[i][j],
+          hNetUpdatesLeft_[i - 1][j - 1],
+          hNetUpdatesRight_[i - 1][j - 1],
+          huNetUpdatesLeft_[i - 1][j - 1],
+          huNetUpdatesRight_[i - 1][j - 1],
+          maxEdgeSpeed
+        );
+        maxWaveSpeedLocal_vec[i] = std::max(maxWaveSpeedLocal_vec[i], maxEdgeSpeed);
+      }
     }
 
     // Compute the net-updates for the horizontal edges
-    // #pragma omp single nowait
-    // #pragma omp taskloop nogroup mergeable collapse(1) num_tasks(omp_get_max_threads()*4)
-    #pragma omp for schedule(guided, grainsize_) nowait
+    #if OMP_FOR==1
+    #pragma omp for schedule(static, grainsize_) nowait
+    #elif OMP_TASK==1
+    #pragma omp single nowait
+    #pragma omp taskloop nogroup mergeable collapse(1) num_tasks(omp_get_max_threads() * 2)
+    #endif
     for (int i = 1; i < nx_ + 1; i++) {
-      // #pragma omp task
-      // {
-        maxWaveSpeedLocal_vec2[i] = RealType(0.0);
-        auto tid = omp_get_thread_num();
-        RealType maxEdgeSpeed = RealType(0.0);
-        for (int j = 1; j < ny_ + 2; j++) {
-          wavePropagationSolver_[tid].computeNetUpdates(
-            h_[i][j - 1],
-            h_[i][j],
-            hv_[i][j - 1],
-            hv_[i][j],
-            b_[i][j - 1],
-            b_[i][j],
-            hNetUpdatesBelow_[i - 1][j - 1],
-            hNetUpdatesAbove_[i - 1][j - 1],
-            hvNetUpdatesBelow_[i - 1][j - 1],
-            hvNetUpdatesAbove_[i - 1][j - 1],
-            maxEdgeSpeed
-          );
-          // Update the thread-local maximum wave speed
-          maxWaveSpeedLocal_vec2[i] = std::max(maxWaveSpeedLocal_vec2[i], maxEdgeSpeed);
-          
-        }
-      // }
+      maxWaveSpeedLocal_vec2[i] = RealType(0.0);
+      auto tid = omp_get_thread_num();
+      RealType maxEdgeSpeed = RealType(0.0);
+      for (int j = 1; j < ny_ + 2; j++) {
+        wavePropagationSolver_[tid].computeNetUpdates(
+          h_[i][j - 1],
+          h_[i][j],
+          hv_[i][j - 1],
+          hv_[i][j],
+          b_[i][j - 1],
+          b_[i][j],
+          hNetUpdatesBelow_[i - 1][j - 1],
+          hNetUpdatesAbove_[i - 1][j - 1],
+          hvNetUpdatesBelow_[i - 1][j - 1],
+          hvNetUpdatesAbove_[i - 1][j - 1],
+          maxEdgeSpeed
+        );
+        // Update the thread-local maximum wave speed
+        maxWaveSpeedLocal_vec2[i] = std::max(maxWaveSpeedLocal_vec2[i], maxEdgeSpeed);
+      }
     }
-    
+  #if  OMP_FOR==1 or OMP_TASK==1
   }
+  #endif
+
   #pragma unroll
   for (int i = 1; i < nx_ + 2; i++) {
     maxWaveSpeed = std::max(maxWaveSpeed, std::max(maxWaveSpeedLocal_vec[i], maxWaveSpeedLocal_vec2[i]));
@@ -174,14 +174,17 @@ void Blocks::WavePropagationBlock::computeNumericalFluxes() {
 void Blocks::WavePropagationBlock::updateUnknowns(RealType dt) {
   // Update cell averages with the net-updates
 
-  #pragma omp parallel num_threads(56)
+  #if  OMP_FOR==1 or OMP_TASK==1
+  #pragma omp parallel num_threads(omp_get_max_threads())
   {
+  #endif
+    #if  OMP_TASK==1
+    #pragma omp single nowait
+    #pragma omp taskloop num_tasks(omp_get_max_threads()*2) nogroup
+    #elif OMP_FOR==1
     auto grainsize_ = (int)((nx_ + 2) / omp_get_num_threads());
-    // int grainsize_ = 8;
-
-    // #pragma omp single nowait
-    // #pragma omp taskloop nogroup mergeable collapse(1) num_tasks(omp_get_max_threads()*2 - 14)
-    #pragma omp for schedule(guided, grainsize_)
+    #pragma omp for schedule(guided, grainsize_) nowait
+    #endif
     for (int i = 1; i < nx_ + 1; i++) {
       
       for (int j = 1; j < ny_ + 1; j++) {
@@ -198,5 +201,7 @@ void Blocks::WavePropagationBlock::updateUnknowns(RealType dt) {
         }
       }
     }
+  #if  OMP_FOR==1 or OMP_TASK==1
   }
+  #endif
 }

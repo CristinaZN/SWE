@@ -15,6 +15,16 @@ target_link_libraries(${META_PROJECT_NAME}
         SWE-Solvers
 )
 
+option(OMP_FOR "Using omp for for parallelism" OFF)
+if(OMP_FOR)
+    target_compile_definitions(${META_PROJECT_NAME} PUBLIC OMP_FOR)
+endif()
+
+option(OMP_TASK "Using omp task for parallelism" OFF)
+if(OMP_TASK)
+    target_compile_definitions(${META_PROJECT_NAME} PUBLIC OMP_TASK)
+endif()
+
 option(ENABLE_SINGLE_PRECISION "Enable single floating-point precision" OFF)
 if(ENABLE_SINGLE_PRECISION)
     target_compile_definitions(${META_PROJECT_NAME} PUBLIC ENABLE_SINGLE_PRECISION)

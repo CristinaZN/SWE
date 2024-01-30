@@ -1,7 +1,0 @@
-91 [140049414178560] INFO mrtehelpers.mrteenv <> - Product libs directory: /dss/dsshome1/lrz/sys/spack/release/22.2.1/opt/x86_64/intel-parallel-studio/cluster.2020.4-gcc-iwcbshq/vtune_profiler_2020.3.0.612611/lib64
-91 [140049414178560] INFO mrtehelpers.mrteenv <> - File mask: amplxe_tpssmrte_clrprof*
-110 [140049414178560] INFO mrtehelpers.mrteenv <> - File name: lib
-110 [140049414178560] INFO mrtehelpers.mrteenv <> - File mask: amplxe_tpssmrte_clrprof*
-127 [140049414178560] INFO mrtehelpers.mrteenv <> - File name: lib
-128 [140049414178560] ERROR mrtehelpers.mrteenv <> - Failed to init shared librarylib located at /dss/dsshome1/lrz/sys/spack/release/22.2.1/opt/x86_64/intel-parallel-studio/cluster.2020.4-gcc-iwcbshq/vtune_profiler_2020.3.0.612611/lib64, at file: vcs/mrtehelpers3/src/mrteenv/mrte_profiling_initializer.cpp:485
-128 [140049414178560] ERROR mrtehelpers.mrteenv <> - CLR support is disabled because profiler GUID is empty, at file: vcs/mrtehelpers3/src/mrteenv/mrte_profiling_initializer.cpp:308
