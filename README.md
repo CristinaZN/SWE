@@ -1,6 +1,29 @@
 SWE
 ===
 
+This version is used to test the multi-threading for FWaveSolver
+===
+
+## How to run the code
+```bash
+git clone https://github.com/CristinaZN/SWE.git
+cd SWE
+mkdir build
+cd build
+# if you want to test OMP tasking
+cmake -DENABLE_OPENMP=ON -DWITH_SOLVER_FWAVE=ON -DOMP_TASK=1 ..
+# if you want to test OMP for
+cmake -DENABLE_OPENMP=ON -DWITH_SOLVER_FWAVE=ON -DOMP_FOR=1 ..
+# if you want to test OMP for
+cmake -DENABLE_OPENMP=ON -DWITH_SOLVER_FWAVE=ON -DOMP_BASELINE=1 ..
+make clean && make -j 16
+./SWE-MPI-Runner -x 1000 -y 1000 -n 10
+```
+
+
+Original readme is following
+===
+
 [An Education-Oriented Code for Parallel Tsunami Simulation.](Documentation/Mainpage.md)
 
 <div align="center">

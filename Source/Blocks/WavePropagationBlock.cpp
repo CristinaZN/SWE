@@ -87,7 +87,7 @@ void Blocks::WavePropagationBlock::computeNumericalFluxes() {
   maxWaveSpeedLocal_vec2[nx_ + 1] = RealType(0.0);
   
 
-  #if  OMP_FOR==1 or OMP_TASK==1
+  #if  OMP_FOR==1 or OMP_TASK==1 or OMP_BASELINE==1
   #pragma omp parallel
   {
   #endif
@@ -97,6 +97,8 @@ void Blocks::WavePropagationBlock::computeNumericalFluxes() {
     #elif OMP_TASK==1
     #pragma omp single nowait
     #pragma omp taskloop nogroup mergeable collapse(1) num_tasks(omp_get_max_threads() * 2)
+    #elif OMP_BASELINE==1
+    #pragma omp for
     #endif
     for (int i = 1; i < (nx_ + 2); i++) {
       maxWaveSpeedLocal_vec[i] = RealType(0.0);
@@ -126,6 +128,8 @@ void Blocks::WavePropagationBlock::computeNumericalFluxes() {
     #elif OMP_TASK==1
     #pragma omp single nowait
     #pragma omp taskloop nogroup mergeable collapse(1) num_tasks(omp_get_max_threads() * 2)
+    #elif OMP_BASELINE==1
+    #pragma omp for
     #endif
     for (int i = 1; i < nx_ + 1; i++) {
       maxWaveSpeedLocal_vec2[i] = RealType(0.0);
@@ -149,11 +153,15 @@ void Blocks::WavePropagationBlock::computeNumericalFluxes() {
         maxWaveSpeedLocal_vec2[i] = std::max(maxWaveSpeedLocal_vec2[i], maxEdgeSpeed);
       }
     }
-  #if  OMP_FOR==1 or OMP_TASK==1
+  #if OMP_FOR==1 or OMP_TASK==1 or OMP_BASELINE==1
   }
   #endif
 
+  #if OMP_FOR==1 or OMP_TASK==1
   #pragma unroll
+  #elif OMP_BASELINE==1
+  #pragma omp for
+  #endif
   for (int i = 1; i < nx_ + 2; i++) {
     maxWaveSpeed = std::max(maxWaveSpeed, std::max(maxWaveSpeedLocal_vec[i], maxWaveSpeedLocal_vec2[i]));
   }
@@ -174,7 +182,7 @@ void Blocks::WavePropagationBlock::computeNumericalFluxes() {
 void Blocks::WavePropagationBlock::updateUnknowns(RealType dt) {
   // Update cell averages with the net-updates
 
-  #if  OMP_FOR==1 or OMP_TASK==1
+  #if  OMP_FOR==1 or OMP_TASK==1 or OMP_BASELINE==1
   #pragma omp parallel num_threads(omp_get_max_threads())
   {
   #endif
@@ -184,6 +192,8 @@ void Blocks::WavePropagationBlock::updateUnknowns(RealType dt) {
     #elif OMP_FOR==1
     auto grainsize_ = (int)((nx_ + 2) / omp_get_num_threads());
     #pragma omp for schedule(guided, grainsize_) nowait
+    #elif OMP_BASELINE==1
+    #pragma omp for
     #endif
     for (int i = 1; i < nx_ + 1; i++) {
       
@@ -201,7 +211,7 @@ void Blocks::WavePropagationBlock::updateUnknowns(RealType dt) {
         }
       }
     }
-  #if  OMP_FOR==1 or OMP_TASK==1
+  #if  OMP_FOR==1 or OMP_TASK==1 or OMP_BASELINE==1
   }
   #endif
 }
